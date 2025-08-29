@@ -1,35 +1,166 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+import "./App.css";
+import type { TimeFrame } from "./type";
+import { useStockData } from "./hooks/useStockData";
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function App() {
-  const [count, setCount] = useState(0)
+  const {
+    chartData,
+    loading,
+    error,
+    activeTimeFrame,
+    handleTimeFrameChange,
+    retryFetch,
+  } = useStockData();
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: `TSLA Stock - ${
+          activeTimeFrame.charAt(0).toUpperCase() + activeTimeFrame.slice(1)
+        } Chart`,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            const value = context.parsed.y;
+            return `Close: $${value.toFixed(2)}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        position: "left" as const,
+        title: {
+          display: true,
+          text: "Price ($)",
+        },
+        ticks: {
+          callback: function (value: any) {
+            return "$" + value.toFixed(2);
+          },
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Time",
+        },
+        ticks: {
+          maxTicksLimit: 15,
+        },
+      },
+    },
+    interaction: {
+      intersect: false,
+      mode: "index" as const,
+    },
+  };
+
+  const getButtonClassName = (timeFrame: TimeFrame) => {
+    let className = "timeframe-button";
+    if (activeTimeFrame === timeFrame) className += " active";
+    if (loading) className += " loading";
+    return className;
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="app-container">
+      {/* Time Frame Buttons */}
+      <div className="button-container">
+        <button
+          className={getButtonClassName("hourly")}
+          onClick={() => handleTimeFrameChange("hourly")}
+          disabled={loading}
+        >
+          Hourly
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button
+          className={getButtonClassName("daily")}
+          onClick={() => handleTimeFrameChange("daily")}
+          disabled={loading}
+        >
+          Daily
+        </button>
+        <button
+          className={getButtonClassName("weekly")}
+          onClick={() => handleTimeFrameChange("weekly")}
+          disabled={loading}
+        >
+          Weekly
+        </button>
+        <button
+          className={getButtonClassName("monthly")}
+          onClick={() => handleTimeFrameChange("monthly")}
+          disabled={loading}
+        >
+          Monthly
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+      <div className="chart-container">
+        {loading && (
+          <div className="loading-state">
+            <div>Loading {activeTimeFrame} data...</div>
+          </div>
+        )}
+
+        {error && (
+          <div className="error-state">
+            <div className="error-message">
+              Error: {error}
+            </div>
+            <button
+              onClick={retryFetch}
+              className="retry-button"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && chartData && (
+          <Line data={chartData} options={options} />
+        )}
+
+        {!loading && !error && !chartData && (
+          <div className="no-data-state">
+            <div>No data available</div>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
 }
 
-export default App
+export default App;
