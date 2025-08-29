@@ -13,7 +13,6 @@ import "./App.css";
 import type { TimeFrame } from "./type";
 import { useStockData } from "./hooks/useStockData";
 
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -40,14 +39,26 @@ function App() {
     plugins: {
       legend: {
         position: "top" as const,
+        labels: {
+          color: "#e2e8f0",
+        },
       },
       title: {
         display: true,
         text: `TSLA Stock - ${
           activeTimeFrame.charAt(0).toUpperCase() + activeTimeFrame.slice(1)
         } Chart`,
+        color: "#e2e8f0",
+        font: {
+          size: 16,
+        },
       },
       tooltip: {
+        backgroundColor: "rgba(45, 55, 72, 0.9)",
+        titleColor: "#e2e8f0",
+        bodyColor: "#e2e8f0",
+        borderColor: "#f19515",
+        borderWidth: 1,
         callbacks: {
           label: function (context: any) {
             const value = context.parsed.y;
@@ -60,22 +71,32 @@ function App() {
       y: {
         beginAtZero: false,
         position: "left" as const,
+        grid: {
+          color: "#4a5568",
+        },
         title: {
           display: true,
           text: "Price ($)",
+          color: "#e2e8f0",
         },
         ticks: {
+          color: "#a0aec0",
           callback: function (value: any) {
             return "$" + value.toFixed(2);
           },
         },
       },
       x: {
+        grid: {
+          color: "#4a5568",
+        },
         title: {
           display: true,
           text: "Time",
+          color: "#e2e8f0",
         },
         ticks: {
+          color: "#a0aec0",
           maxTicksLimit: 15,
         },
       },
@@ -95,21 +116,21 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Time Frame Buttons */}
       <div className="button-container">
+        <button
+          className={getButtonClassName("daily")}
+          style={{marginRight: 60}}
+          onClick={() => handleTimeFrameChange("daily")}
+          disabled={loading}
+        >
+          Daily
+        </button>
         <button
           className={getButtonClassName("hourly")}
           onClick={() => handleTimeFrameChange("hourly")}
           disabled={loading}
         >
           Hourly
-        </button>
-        <button
-          className={getButtonClassName("daily")}
-          onClick={() => handleTimeFrameChange("daily")}
-          disabled={loading}
-        >
-          Daily
         </button>
         <button
           className={getButtonClassName("weekly")}
@@ -136,13 +157,8 @@ function App() {
 
         {error && (
           <div className="error-state">
-            <div className="error-message">
-              Error: {error}
-            </div>
-            <button
-              onClick={retryFetch}
-              className="retry-button"
-            >
+            <div className="error-message">Error: {error}</div>
+            <button onClick={retryFetch} className="retry-button">
               Retry
             </button>
           </div>
@@ -158,7 +174,6 @@ function App() {
           </div>
         )}
       </div>
-
     </div>
   );
 }

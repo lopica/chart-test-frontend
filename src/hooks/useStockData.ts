@@ -70,8 +70,8 @@ export const useStockData = () => {
           {
             label: "TSLA Close Price",
             data: sortedCandles.map((item) => item.close),
-            borderColor: "rgb(34, 197, 94)",
-            backgroundColor: "rgba(34, 197, 94, 0.1)",
+            borderColor: "rgb(241, 149, 21)",
+            backgroundColor: "rgba(241, 149, 21, 0.1)",
             tension: 0.1,
           },
         ],
